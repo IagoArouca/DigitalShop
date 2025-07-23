@@ -1,0 +1,99 @@
+# digital-shop/.github/workflows/frontend-ci-cd.yml
+name: Frontend CI/CD (Vercel)
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'apps/frontend/**' # Apenas roda se houver mudanças na pasta do frontend
+      - 'pnpm-lock.yaml' # Se o lockfile da raiz mudar, também roda
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'apps/frontend/**'
+      - 'pnpm-lock.yaml'
+
+permissions:
+  contents: read # Permissão mínima necessária para checkout do código
+
+jobs:
+  ci:
+    name: Build e Testes do Frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./apps/frontend # Todos os comandos a seguir serão executados dentro da pasta 'frontend'
+
+    steps:
+      - name: Checkout do Código
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8 # Use a versão do pnpm que você está usando
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml # Cache do lockfile da raiz do monorepo
+
+      - name: Instalar Dependências (Monorepo Root)
+        run: pnpm install --frozen-lockfile # Instala dependências de todo o monorepo
+        working-directory: . # Volta para a raiz do monorepo para instalar
+
+      - name: Rodar Testes do Frontend
+        run: pnpm test # Executa o script 'test' do frontend (verifique seu package.json)
+        # Certifique-se de que 'apps/frontend/package.json' tem um script 'test'
+
+      - name: Buildar Aplicação Frontend
+        run: pnpm build # Executa o script 'build' do frontend
+        env:
+          # A VITE_API_BASE_URL para o ambiente de produção
+          # DEVE ser configurada nas Environment Variables do Vercel Dashboard.
+          # Esta variável aqui é mais para garantir que o CI passe o build.
+          # Você pode usar um valor de placeholder temporário se ainda não tiver a URL do backend.
+          VITE_API_BASE_URL: 'https://api.digitalshop.render.com' # Exemplo - ajuste quando tiver a URL real do backend no Render!
+
+  deploy:
+    name: Deploy para Vercel
+    runs-on: ubuntu-latest
+    needs: ci # Depende do job 'ci'
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') # Apenas deploy em push para main/develop
+
+    defaults:
+      run:
+        working-directory: ./apps/frontend
+
+    steps:
+      - name: Checkout do Código
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Instalar Dependências (Monorepo Root)
+        run: pnpm install --frozen-lockfile
+        working-directory: .
+
+      - name: Instalar Vercel CLI
+        run: npm install -g vercel
+
+      - name: Vercel Deploy
+        run: vercel deploy --prebuilt --prod --token ${{ secrets.VERCEL_TOKEN }}
+        
