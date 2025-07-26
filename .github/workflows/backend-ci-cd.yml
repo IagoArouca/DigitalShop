@@ -41,11 +41,11 @@ jobs:
         with:
           node-version: '20'
           cache: 'pnpm'
-          cache-dependency-path: pnpm-lock.yaml
+          cache-dependency-path: ./pnpm-lock.yaml
 
       - name: Instalar Dependências (Monorepo Root)
-        run: pnpm install --frozen-lockfile
-        working-directory: . 
+        run: pnpm install --no-frozen-lockfile
+        working-directory: .
         env: 
           PNPM_HOME: ${{ runner.temp }}/.pnpm-home
           PATH: ${{ runner.temp }}/.pnpm-home:${{ env.PATH }}
@@ -72,12 +72,25 @@ jobs:
         with:
           version: 8
 
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          cache-dependency-path: ./pnpm-lock.yaml
+
+      - name: Instalar Dependências (Monorepo Root)
+        run: pnpm install --no-frozen-lockfile
+        working-directory: .
+        env: 
+          PNPM_HOME: ${{ runner.temp }}/.pnpm-home
+          PATH: ${{ runner.temp }}/.pnpm-home:${{ env.PATH }}
+
       - name: Disparar Deploy do Backend no Render
         run: |
           SERVICE_ID="${{ secrets.RENDER_SERVICE_ID }}"
           API_KEY="${{ secrets.RENDER_API_KEY }}"
 
-          # Verifica se os secrets estão configurados
           if [ -z "$SERVICE_ID" ]; then
             echo "Erro: RENDER_SERVICE_ID não configurado nos GitHub Secrets. Impossível disparar deploy."
             exit 1
