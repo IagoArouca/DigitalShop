@@ -1,4 +1,3 @@
-# digital-shop/.github/workflows/frontend-ci-cd.yml
 name: Frontend CI/CD (Vercel)
 
 on:
@@ -7,8 +6,8 @@ on:
       - main
       - develop
     paths:
-      - 'apps/frontend/**' # Apenas roda se houver mudanças na pasta do frontend
-      - 'pnpm-lock.yaml' # Se o lockfile da raiz mudar, também roda
+      - 'apps/frontend/**' 
+      - 'pnpm-lock.yaml' 
   pull_request:
     branches:
       - main
@@ -18,16 +17,14 @@ on:
       - 'pnpm-lock.yaml'
 
 permissions:
-  contents: read # Permissão mínima necessária para checkout do código
-
+  contents: read 
 jobs:
   ci:
     name: Build e Testes do Frontend
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./apps/frontend # Todos os comandos a seguir serão executados dentro da pasta 'frontend'
-
+        working-directory: ./apps/frontend 
     steps:
       - name: Checkout do Código
         uses: actions/checkout@v4
@@ -35,36 +32,34 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
         with:
-          version: 8 # Use a versão do pnpm que você está usando
+          version: 8 
 
       - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
-          cache-dependency-path: pnpm-lock.yaml # Cache do lockfile da raiz do monorepo
-
+          cache-dependency-path: pnpm-lock.yaml
       - name: Instalar Dependências (Monorepo Root)
-        run: pnpm install --frozen-lockfile # Instala dependências de todo o monorepo
-        working-directory: . # Volta para a raiz do monorepo para instalar
+        run: pnpm install --frozen-lockfile
+        working-directory: .
+        env: 
+          PNPM_HOME: ${{ runner.temp }}/.pnpm-home
+          PATH: ${{ runner.temp }}/.pnpm-home:${{ env.PATH }}
 
       - name: Rodar Testes do Frontend
-        run: pnpm test # Executa o script 'test' do frontend (verifique seu package.json)
-        # Certifique-se de que 'apps/frontend/package.json' tem um script 'test'
+        run: pnpm test
 
       - name: Buildar Aplicação Frontend
-        run: pnpm build # Executa o script 'build' do frontend
+        run: pnpm build
         env:
-          # A VITE_API_BASE_URL para o ambiente de produção
-          # DEVE ser configurada nas Environment Variables do Vercel Dashboard.
-          # Esta variável aqui é mais para garantir que o CI passe o build.
-          # Você pode usar um valor de placeholder temporário se ainda não tiver a URL do backend.
-          VITE_API_BASE_URL: 'https://api.digitalshop.render.com' # Exemplo - ajuste quando tiver a URL real do backend no Render!
+          
+          VITE_API_BASE_URL: 'https://api.digitalshop.render.com' 
 
   deploy:
     name: Deploy para Vercel
     runs-on: ubuntu-latest
-    needs: ci # Depende do job 'ci'
+    needs: ci 
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') # Apenas deploy em push para main/develop
 
     defaults:
@@ -90,6 +85,9 @@ jobs:
       - name: Instalar Dependências (Monorepo Root)
         run: pnpm install --frozen-lockfile
         working-directory: .
+        env: 
+          PNPM_HOME: ${{ runner.temp }}/.pnpm-home
+          PATH: ${{ runner.temp }}/.pnpm-home:${{ env.PATH }}
 
       - name: Instalar Vercel CLI
         run: npm install -g vercel
