@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const productRoutes = require('./routes/productRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -22,12 +23,7 @@ app.get('/', (req, res) => {
     res.send('API da Digital Shop esta funcionando!')
 });
 
-app.get('/api/products', (req, res) => {
-    res.json([
-        { id: '1', name: 'Ebook de Programação', price: 29.99 },
-        { id: '2', name: 'Curso de React Avançado', price: 199.90 }
-    ]);
-});
+app.use('/api/products', productRoutes);
 
 app.listen(PORT, () => {
     console.log(`Servidor rodando na porta ${PORT}`); 

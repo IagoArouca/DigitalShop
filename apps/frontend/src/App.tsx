@@ -1,35 +1,69 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState, useEffect } from 'react';
+import './App.css'; 
 
-function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+interface Product {
+  _id: string;
+  name: string;
+  description: string;
+  price: number;
+  imageUrl: string;
+  category: string;
 }
 
-export default App
+function App() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+ 
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`${API_BASE_URL}/api/products`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data: Product[] = await response.json();
+        setProducts(data);
+      } catch (e: any) {
+        console.error("Failed to fetch products:", e);
+        setError(e.message || "Erro ao carregar produtos");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [API_BASE_URL]); 
+
+  return (
+    <div className="App">
+      <header className="App-header">
+        <h1>Digital Shop - Produtos</h1>
+      </header>
+      <main>
+        {loading && <p>Carregando produtos...</p>}
+        {error && <p style={{ color: 'red' }}>Erro: {error}</p>}
+        {!loading && !error && products.length === 0 && (
+          <p>Nenhum produto disponível. Adicione alguns pelo backend!</p>
+        )}
+        <div className="product-list">
+          {products.map(product => (
+            <div key={product._id} className="product-card">
+              <img src={product.imageUrl} alt={product.name} />
+              <h2>{product.name}</h2>
+              <p>{product.description}</p>
+              <p>Preço: R$ {product.price.toFixed(2)}</p>
+              <p>Categoria: {product.category}</p>
+            </div>
+          ))}
+        </div>
+      </main>
+    </div>
+  );
+}
+
+export default App;
