@@ -19,7 +19,7 @@ if(MONGO_URI) {
 }
 
 app.get('/', (req, res) => {
-    res.send('API da Digital Shop funcionando!')
+    res.send('API da Digital Shop esta funcionando!')
 });
 
 app.get('/api/products', (req, res) => {
@@ -30,7 +30,7 @@ app.get('/api/products', (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`Servidor rodando na porta ${PORT}`);
+    console.log(`Servidor rodando na porta ${PORT}`); 
 });
 
 module.exports = app;
