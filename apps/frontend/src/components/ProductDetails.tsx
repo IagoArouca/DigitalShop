@@ -58,6 +58,7 @@ function ProductDetails() {
         <p>{product.description}</p>
         <p>Preço: R$ {product.price.toFixed(2)}</p>
         <p>Categoria: {product.category}</p>
+        <button onClick={handleAddToCart}>Adicionar ao Carrinho</button>
       </div>
     </div>
   );
