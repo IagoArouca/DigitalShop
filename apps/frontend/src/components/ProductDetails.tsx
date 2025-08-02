@@ -45,6 +45,31 @@ function ProductDetails() {
     fetchProduct();
   }, [id]); 
 
+  const handleAddToCart = async () => {
+      if (!product) return;
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/cart/add`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(product),
+        });
+
+        if (!response.ok) {
+          throw new Error('Falha ao adicionar produto ao carrinho');
+        }
+
+        const data = await response.json();
+        alert(data.message);
+      } catch (error) {
+        console.error('Erro ao adicionar ao carrinho:', error);
+        alert('Erro ao adicionar produto ao carrinho. Tente novamente.');
+
+      }
+    };
+
   if (loading) return <p>Carregando detalhes do produto...</p>;
   if (error) return <p style={{ color: 'red' }}>{error}</p>;
   if (!product) return <p>Produto não encontrado.</p>;
