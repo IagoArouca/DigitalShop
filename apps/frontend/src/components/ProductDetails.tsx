@@ -14,7 +14,7 @@ interface Product {
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 function ProductDetails() {
-  const { id } = useParams<{ id: string }>(); 
+  const { id } = useParams<{ id: string }>();
   const { addToCart } = useCart();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -45,48 +45,58 @@ function ProductDetails() {
     };
 
     fetchProduct();
-  }, [id]); 
+  }, [id]);
 
   const handleAddToCart = async () => {
-      if (!product) return;
-
-      try {
+    if (!product) return;
+    
+    try {
         const response = await fetch(`${API_BASE_URL}/api/cart/add`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(product),
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(product),
         });
 
         if (!response.ok) {
-          throw new Error('Falha ao adicionar produto ao carrinho');
+            throw new Error('Falha ao adicionar produto ao carrinho');
         }
 
         const data = await response.json();
         addToCart(product);
         alert(data.message);
-      } catch (error) {
+    } catch (error) {
         console.error('Erro ao adicionar ao carrinho:', error);
         alert('Erro ao adicionar produto ao carrinho. Tente novamente.');
+    }
+  };
 
-      }
-    };
-
-  if (loading) return <p>Carregando detalhes do produto...</p>;
-  if (error) return <p style={{ color: 'red' }}>{error}</p>;
-  if (!product) return <p>Produto não encontrado.</p>;
+  if (loading) return <p className="text-center text-gray-500 mt-8">Carregando detalhes do produto...</p>;
+  if (error) return <p className="text-center text-red-500 mt-8">{error}</p>;
+  if (!product) return <p className="text-center text-gray-500 mt-8">Produto não encontrado.</p>;
 
   return (
-    <div className="product-details-container">
-      <Link to="/">← Voltar para a lista de produtos</Link>
-      <div className="product-details-card">
-        <img src={product.imageUrl} alt={product.name} />
-        <h2>{product.name}</h2>
-        <p>{product.description}</p>
-        <p>Preço: R$ {product.price.toFixed(2)}</p>
-        <p>Categoria: {product.category}</p>
-        <button onClick={handleAddToCart}>Adicionar ao Carrinho</button>
+    <div className="container mx-auto p-4">
+      <Link to="/" className="text-blue-500 hover:underline mb-4 inline-block">← Voltar para a lista de produtos</Link>
+      <div className="bg-white rounded-lg shadow-lg overflow-hidden md:flex">
+        <img 
+          src={product.imageUrl} 
+          alt={product.name} 
+          className="w-full md:w-1/2 h-64 md:h-auto object-cover" 
+        />
+        <div className="p-6 md:w-1/2">
+          <h2 className="text-3xl font-bold mb-2">{product.name}</h2>
+          <p className="text-gray-700 mb-4">{product.description}</p>
+          <p className="text-2xl font-bold text-gray-900 mb-4">R$ {product.price.toFixed(2)}</p>
+          <p className="text-gray-600 mb-6">Categoria: {product.category}</p>
+          <button 
+            onClick={handleAddToCart} 
+            className="bg-green-500 text-white py-3 px-6 rounded-lg text-lg font-semibold hover:bg-green-600 transition-colors"
+          >
+            Adicionar ao Carrinho
+          </button>
+        </div>
       </div>
     </div>
   );
