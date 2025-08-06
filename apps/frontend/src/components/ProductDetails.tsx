@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useCart } from '../context/CartContext';
 
 interface Product {
   _id: string;
@@ -14,6 +15,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000
 
 function ProductDetails() {
   const { id } = useParams<{ id: string }>(); 
+  const { addToCart } = useCart();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -62,6 +64,7 @@ function ProductDetails() {
         }
 
         const data = await response.json();
+        addToCart(product);
         alert(data.message);
       } catch (error) {
         console.error('Erro ao adicionar ao carrinho:', error);
