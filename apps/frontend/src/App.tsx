@@ -1,14 +1,12 @@
 import { Routes, Route } from 'react-router-dom';
 import ProductList from './components/ProductList';
 import ProductDetails from './components/ProductDetails';
-import './App.css'; 
+import Header from './components/Header'; 
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <h1>Lojinha</h1>
-      </header>
+      <Header />
       <main>
         <Routes>
           <Route path="/" element={<ProductList />} />
