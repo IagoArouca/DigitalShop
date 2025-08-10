@@ -1,12 +1,38 @@
 import { useCart } from "../context/CartContext";
 import { Link } from 'react-router-dom';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
 const CartPage = () => {
-    const { cart, removeFromCart } =useCart();
+    const { cart, removeFromCart, clearCart } =useCart();
     const total = cart.reduce((sum, item) => sum + item.price, 0);
 
     const handleRemoveFromCart = (productId: string) => {
         removeFromCart(productId);
+    }
+
+    const handleCheckout = async () => {
+        if (cart.length === 0) {
+            alert("Seu carrinho está vazio!")
+            return
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/cart/checkout`,{
+                method: 'POST',
+            });
+
+            if (!response.ok) {
+                throw new Error('Falha ao finalizar a compra');
+            }
+
+            const data = await response.json();
+            clearCart();
+            alert(data.message + " Obrigado por comprar!");
+        } catch (error) {
+            console.error('Erro ao finalizar a compra:', error);
+            alert('Ocorreu um erro ao finalizar a compra.')
+        }
     }
 
     return (
