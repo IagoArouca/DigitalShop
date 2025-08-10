@@ -68,7 +68,9 @@ const CartPage = () => {
                             <p>Total:</p>
                             <p>R$ {total.toFixed(2)}</p>
                         </div>
-                        <button className="mt-6 w-full bg-blue-600 text-white py-3 rounded-lg text-xl hover:bg-blue-700 transition-colors">
+                        <button
+                            onClick={() => handleCheckout()} 
+                            className="mt-6 w-full bg-blue-600 text-white py-3 rounded-lg text-xl hover:bg-blue-700 transition-colors">
                             Finalizar compra
                         </button>
                     </div>
