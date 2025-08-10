@@ -10,7 +10,12 @@ const PORT = process.env.PORT || 5000;
 let cart = [];
 const MONGO_URI = process.env.MONGO_URI;
 
-app.use(cors());
+const corsOptions = {
+  origin: 'https://digital-shop-frontend.vercel.app', 
+  optionsSuccessStatus: 200 
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 if(MONGO_URI) {
