@@ -40,6 +40,11 @@ app.post('/api/cart/add', (req, res) => {
     res.status(200).json({ message: "Produto adicionado ao carrinho com sucesso.", carItem: productToAdd });
 });
 
+app.post('/api/cart/checkout', (req, res) => {
+    cart = [];
+    res.status(200).json({ message: "Carrinho esvaziado com sucesso."})
+})
+
 app.listen(PORT, () => {
     console.log(`Servidor rodando na porta ${PORT}`); 
 });
