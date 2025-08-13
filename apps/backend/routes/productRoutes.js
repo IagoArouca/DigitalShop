@@ -15,7 +15,7 @@ router.post('/', async (req, res) => {
     }
 });
 
-router.get('/', async (req, res) => {
+router.get('/api/products', async (req, res) => {
     try {
         const products = await Product.find();
         res.status(200).json(products);
@@ -24,7 +24,7 @@ router.get('/', async (req, res) => {
     }
 });
 
-router.get('/:id', async (req, res) => {
+router.get('/api/products/:id', async (req, res) => {
     try {
         const product = await Product.findById(req.params.id);
         if (!product) {
@@ -68,6 +68,18 @@ router.delete('/:id', async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: 'Erro ao excluir produto', error: err.message });
   }
+});
+
+app.get('/api/cart', async (req, res) => {
+    try {
+        const cart = await Cart.findOne().populate('items'); 
+        if (!cart) {
+            return res.status(200).json({ items: [] });
+        }
+        res.json(cart);
+    } catch (err) {
+        res.status(500).json({ message: 'Erro ao buscar o carrinho.', error: err });
+    }
 });
 
 module.exports = router;
