@@ -86,7 +86,7 @@ app.get('/', (req, res) => {
     res.send('Servidor do Digital Shop está rodando!');
 });
 
-// ROTAS DE PRODUTOS
+
 app.get('/api/products', async (req, res) => {
     try {
         const products = await Product.find();
