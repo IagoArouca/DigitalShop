@@ -1,32 +1,26 @@
-require('dotenv').config();
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
-const productRoutes = require('./routes/productRoutes');
+const mongoose = require('mongoose');
+require('dotenv').config();
+
 const Product = require('./models/Product');
-const Cart = require('./models/Cart')
+const Cart = require('./models/Cart');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
-
-
-const MONGO_URI = process.env.MONGO_URI;
 
 const corsOptions = {
-  origin: 'https://digital-shop-frontend.vercel.app', 
-  optionsSuccessStatus: 200 
+    origin: 'https://digital-shop-frontend.vercel.app',
+    optionsSuccessStatus: 200
 };
-
 app.use(cors(corsOptions));
 app.use(express.json());
 
-if(MONGO_URI) {
-    mongoose.connect(MONGO_URI)
-        .then(() => console.log('MongoDB conectado com sucesso!'))
-        .catch(err => console.error('Erro de conexão com MongoDB', err));
-} else {
-    console.error('MONGO_URI não definida. Conexão com o MongoDB ignorada.');
-}
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => {
+        console.log('Conectado ao MongoDB Atlas!');
+        checkAndSeedProducts();
+    })
+    .catch(err => console.error('Erro de conexão com o MongoDB:', err));
 
 const checkAndSeedProducts = async () => {
     try {
@@ -87,25 +81,87 @@ const checkAndSeedProducts = async () => {
     }
 };
 
+
 app.get('/', (req, res) => {
-    res.send('API da Digital Shop esta funcionando!')
+    res.send('Servidor do Digital Shop está rodando!');
 });
 
-app.use('/api/products', productRoutes);
-
-
-app.post('/api/cart/add', (req, res) => {
-    const productToAdd = req.body;
-    if (!productToAdd || !productToAdd._id) {
-        return res.status(400).json({ message: "Produto inválido." });
+// ROTAS DE PRODUTOS
+app.get('/api/products', async (req, res) => {
+    try {
+        const products = await Product.find();
+        res.json(products);
+    } catch (err) {
+        res.status(500).json({ message: 'Erro ao buscar produtos.', error: err });
     }
-    cart.push(productToAdd);
-    res.status(200).json({ message: "Produto adicionado ao carrinho com sucesso.", carItem: productToAdd });
+});
+
+app.get('/api/products/:id', async (req, res) => {
+    try {
+        const product = await Product.findById(req.params.id);
+        if (!product) {
+            return res.status(404).json({ message: 'Produto não encontrado.' });
+        }
+        res.json(product);
+    } catch (err) {
+        res.status(500).json({ message: 'Erro ao buscar o produto.', error: err });
+    }
 });
 
 
+app.get('/api/cart', async (req, res) => {
+    try {
+        const cart = await Cart.findOne().populate('items');
+        if (!cart) {
+           
+            return res.status(200).json({ items: [] });
+        }
+        res.json(cart);
+    } catch (err) {
+        res.status(500).json({ message: 'Erro ao buscar o carrinho.', error: err });
+    }
+});
+
+app.post('/api/cart/add', async (req, res) => {
+    try {
+        const productToAdd = req.body;
+        if (!productToAdd || !productToAdd._id) {
+            return res.status(400).json({ message: 'Dados do produto inválidos.' });
+        }
+        
+        let cart = await Cart.findOne();
+        if (!cart) {
+            cart = await Cart.create({ items: [] });
+        }
+        
+        cart.items.push(productToAdd);
+        await cart.save();
+        
+        res.status(200).json({ message: 'Produto adicionado ao carrinho com sucesso!' });
+    } catch (err) {
+        res.status(500).json({ message: 'Erro ao adicionar produto ao carrinho.', error: err });
+    }
+});
+
+app.post('/api/cart/checkout', async (req, res) => {
+    try {
+        const updatedCart = await Cart.findOneAndUpdate(
+            {},
+            { items: [] },
+            { new: true }
+        );
+
+        if (!updatedCart) {
+             return res.status(404).json({ message: 'Carrinho não encontrado.' });
+        }
+
+        res.status(200).json({ message: 'Carrinho esvaziado com sucesso.' });
+    } catch (err) {
+        res.status(500).json({ message: 'Erro ao esvaziar o carrinho.', error: err });
+    }
+});
+
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log(`Servidor rodando na porta ${PORT}`); 
+    console.log(`Servidor rodando na porta ${PORT}`);
 });
-
-module.exports = app;
