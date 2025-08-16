@@ -17,8 +17,6 @@ interface ProductListProps {
 function ProductList({ products, loading }: ProductListProps) {
     return (
         <div className="container mx-auto p-4">
-  
-
             {loading && <p className="text-center text-gray-500">Carregando produtos...</p>}
             
             {!loading && products.length === 0 && (
