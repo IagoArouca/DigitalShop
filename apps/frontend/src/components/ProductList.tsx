@@ -16,12 +16,17 @@ function ProductList() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string>(''); 
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${API_BASE_URL}/api/products`);
+        const url = searchTerm 
+            ? `${API_BASE_URL}/api/products?query=${searchTerm}`
+            : `${API_BASE_URL}/api/products`;
+
+        const response = await fetch(url);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -35,15 +40,34 @@ function ProductList() {
       }
     };
 
-    fetchProducts();
-  }, []);
+    const debounceTimer = setTimeout(() => {
+      fetchProducts();
+    }, 300); 
+
+    return () => clearTimeout(debounceTimer);
+
+  }, [searchTerm]); 
+
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+  };
 
   return (
     <div className="container mx-auto p-4">
+      <div className="mb-6">
+        <input 
+          type="text"
+          placeholder="Pesquisar produtos..."
+          value={searchTerm}
+          onChange={handleSearchChange}
+          className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
       {loading && <p className="text-center text-gray-500">Carregando produtos...</p>}
       {error && <p className="text-center text-red-500">Erro: {error}</p>}
       {!loading && !error && products.length === 0 && (
-        <p className="text-center text-gray-500">Nenhum produto disponível. Adicione alguns pelo backend!</p>
+        <p className="text-center text-gray-500">Nenhum produto encontrado. Tente uma pesquisa diferente!</p>
       )}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {products.map(product => (
