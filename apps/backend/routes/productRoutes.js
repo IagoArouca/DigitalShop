@@ -70,16 +70,5 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-app.get('/api/cart', async (req, res) => {
-    try {
-        const cart = await Cart.findOne().populate('items'); 
-        if (!cart) {
-            return res.status(200).json({ items: [] });
-        }
-        res.json(cart);
-    } catch (err) {
-        res.status(500).json({ message: 'Erro ao buscar o carrinho.', error: err });
-    }
-});
 
 module.exports = router;
